@@ -1,0 +1,1155 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>RECEIPTS 🧾</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,500;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0a;
+    --paper: #f5f0e8;
+    --hot: #ff2d6b;
+    --acid: #c8ff00;
+    --muted: #2a2a2a;
+    --ghost: #1a1a1a;
+    --border: #333;
+    --tag-bg: #1e1e1e;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.5;
+  }
+
+  /* Header */
+  .header {
+    padding: 20px 20px 0;
+    position: sticky;
+    top: 0;
+    background: var(--ink);
+    z-index: 100;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.4rem;
+    letter-spacing: 2px;
+    color: var(--paper);
+    line-height: 1;
+  }
+  .logo span { color: var(--hot); }
+  .logo-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: #555;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .streak-badge {
+    background: var(--ghost);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--acid);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Nav tabs */
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    margin-top: 14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: #666;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+  }
+  .nav-tab.active {
+    background: var(--hot);
+    color: var(--paper);
+    border-color: var(--hot);
+  }
+
+  /* Main content */
+  .main { padding: 16px 20px 100px; }
+
+  /* Drop a Receipt form */
+  .drop-section {
+    background: var(--ghost);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .drop-section::before {
+    content: 'DROP A RECEIPT';
+    position: absolute;
+    top: -2px;
+    right: 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    color: var(--hot);
+    background: var(--ghost);
+    padding: 0 6px;
+  }
+  .drop-prompt {
+    font-size: 0.8rem;
+    color: #666;
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 12px;
+    font-style: italic;
+  }
+  .drop-textarea {
+    width: 100%;
+    background: var(--ink);
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 14px;
+    color: var(--paper);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    resize: none;
+    min-height: 90px;
+    line-height: 1.5;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .drop-textarea:focus { border-color: var(--hot); }
+  .drop-textarea::placeholder { color: #3a3a3a; }
+
+  /* Mood tags */
+  .mood-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: #555;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 12px 0 8px;
+  }
+  .mood-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .mood-tag {
+    background: var(--tag-bg);
+    border: 1.5px solid #333;
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .mood-tag span.label {
+    font-size: 0.65rem;
+    color: #666;
+    font-family: 'Space Mono', monospace;
+  }
+  .mood-tag.selected {
+    border-color: var(--hot);
+    background: rgba(255, 45, 107, 0.12);
+    color: var(--paper);
+  }
+  .mood-tag.selected span.label { color: var(--hot); }
+
+  /* Submit row */
+  .submit-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .btn-roast {
+    flex: 1;
+    background: var(--hot);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-roast:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-roast:active { transform: translateY(0); }
+  .btn-roast:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-tripping {
+    background: transparent;
+    border: 1.5px solid var(--acid);
+    color: var(--acid);
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-tripping:hover { background: rgba(200,255,0,0.08); }
+
+  /* Receipt card */
+  .receipt-card {
+    background: var(--ghost);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .receipt-top {
+    padding: 14px 16px;
+  }
+  .receipt-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .receipt-mood {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mood-pill {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .mood-pill .mlabel {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: #666;
+  }
+  .receipt-time {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: #444;
+  }
+  .receipt-text {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #ccc;
+  }
+  /* Roast response */
+  .roast-section {
+    border-top: 1px dashed #2a2a2a;
+    padding: 14px 16px;
+    background: rgba(255,45,107,0.04);
+  }
+  .roast-header {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--hot);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .roast-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,45,107,0.2);
+  }
+  .roast-text {
+    font-size: 0.88rem;
+    line-height: 1.65;
+    color: #e0d8cc;
+    font-style: italic;
+  }
+  .roast-diagnosis {
+    display: inline-block;
+    background: rgba(255,45,107,0.15);
+    border: 1px solid rgba(255,45,107,0.3);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--hot);
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+  }
+  /* Reality check */
+  .reality-section {
+    border-top: 1px dashed #2a2a2a;
+    padding: 12px 16px;
+    background: rgba(200,255,0,0.03);
+  }
+  .reality-header {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--acid);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .reality-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(200,255,0,0.15);
+  }
+  .reality-text {
+    font-size: 0.8rem;
+    line-height: 1.55;
+    color: #aaa;
+  }
+  .reality-verdict {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    background: rgba(200,255,0,0.1);
+    border: 1px solid rgba(200,255,0,0.25);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--acid);
+  }
+
+  /* Loading shimmer */
+  .loading-roast {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 16px;
+    border-top: 1px dashed #2a2a2a;
+    color: #555;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+  }
+  .dot-loader {
+    display: flex;
+    gap: 4px;
+  }
+  .dot-loader span {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--hot);
+    animation: blink 1.2s infinite;
+  }
+  .dot-loader span:nth-child(2) { animation-delay: 0.2s; }
+  .dot-loader span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink {
+    0%, 80%, 100% { opacity: 0.2; }
+    40% { opacity: 1; }
+  }
+
+  /* Pattern alert */
+  .pattern-alert {
+    background: linear-gradient(135deg, #1a0a1a, #0a0a1a);
+    border: 1px solid rgba(255,45,107,0.4);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    animation: slideIn 0.4s ease;
+  }
+  .pattern-alert::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top right, rgba(255,45,107,0.08), transparent 60%);
+  }
+  .pattern-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--hot);
+    color: white;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  .pattern-archetype {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 1px;
+    color: var(--paper);
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+  .pattern-quote {
+    font-size: 0.82rem;
+    color: #888;
+    font-style: italic;
+    line-height: 1.55;
+    margin-bottom: 12px;
+  }
+  .pattern-advice-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--acid);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .pattern-advice {
+    font-size: 0.85rem;
+    line-height: 1.55;
+    color: #ddd;
+  }
+  .counter-archetype {
+    margin-top: 14px;
+    padding: 12px;
+    background: rgba(200,255,0,0.06);
+    border: 1px solid rgba(200,255,0,0.2);
+    border-radius: 10px;
+  }
+  .counter-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--acid);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .counter-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    color: var(--acid);
+    margin-bottom: 4px;
+  }
+  .counter-desc {
+    font-size: 0.78rem;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  /* Phase roadmap section */
+  .phase-section { margin-bottom: 20px; }
+  .phase-header {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+    color: var(--paper);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .phase-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .phase-card {
+    background: var(--ghost);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .phase-card.active-phase { border-color: var(--hot); }
+  .phase-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--hot);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .phase-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+  .phase-desc {
+    font-size: 0.8rem;
+    color: #777;
+    line-height: 1.55;
+  }
+  .phase-features {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .phase-feat {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 0.65rem;
+    color: #888;
+    font-family: 'Space Mono', monospace;
+  }
+  .phase-card.active-phase .phase-feat {
+    border-color: rgba(255,45,107,0.3);
+    color: #bbb;
+  }
+
+  /* Archetypes gallery */
+  .archetype-grid { }
+  .archetype-level {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: #555;
+    text-transform: uppercase;
+    margin: 16px 0 8px;
+  }
+  .archetype-item {
+    background: var(--ghost);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 8px;
+  }
+  .archetype-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    color: var(--paper);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .archetype-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--hot);
+    border: 1px solid rgba(255,45,107,0.3);
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+  .archetype-quote {
+    font-size: 0.78rem;
+    color: #777;
+    font-style: italic;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .archetype-advice-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .advice-arrow {
+    color: var(--acid);
+    font-size: 0.8rem;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+  .archetype-advice-text {
+    font-size: 0.78rem;
+    color: #aaa;
+    line-height: 1.5;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #333;
+  }
+  .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .empty-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    color: #3a3a3a;
+    margin-bottom: 6px;
+  }
+  .empty-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: #2a2a2a;
+    line-height: 1.6;
+  }
+
+  /* Log count */
+  .log-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: #444;
+    text-align: center;
+    margin-bottom: 14px;
+    letter-spacing: 1px;
+  }
+  .log-count em {
+    color: var(--hot);
+    font-style: normal;
+  }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(10,10,10,0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 200;
+  }
+  .bnav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 4px 14px;
+    cursor: pointer;
+    gap: 4px;
+    transition: all 0.15s;
+    border: none;
+    background: transparent;
+    color: #444;
+  }
+  .bnav-item.active { color: var(--hot); }
+  .bnav-icon { font-size: 1.2rem; }
+  .bnav-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--ink); }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: var(--hot);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.3s;
+    white-space: nowrap;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Sections */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .api-error {
+    background: rgba(255,45,107,0.08);
+    border: 1px solid rgba(255,45,107,0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: #888;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="logo">RECEIPT<span>S</span> 🧾</div>
+      <div class="logo-sub">EVIDENCE-BASED EMOTIONAL CLARITY</div>
+    </div>
+    <div class="streak-badge" id="streakBadge">🔥 <span id="logCountBadge">0</span> logs</div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('drop')">🧾 Drop</button>
+    <button class="nav-tab" onclick="switchView('feed')">📜 Feed</button>
+    <button class="nav-tab" onclick="switchView('archetypes')">🗂️ Field Guide</button>
+    <button class="nav-tab" onclick="switchView('phases')">🚀 Roadmap</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- DROP VIEW -->
+  <div class="view active" id="view-drop">
+    <div id="patternAlertContainer"></div>
+    <div class="drop-section">
+      <div class="drop-prompt">// spill it. no judgment. just facts.</div>
+      <textarea class="drop-textarea" id="dropInput" placeholder="he said he 'forgot' we had plans but liked her instagram 40 minutes later..."></textarea>
+      <div class="mood-label">// MANDATORY MOOD TAG</div>
+      <div class="mood-tags">
+        <div class="mood-tag" onclick="selectMood(this, '😒','dead')" data-mood="😒">😒 <span class="label">DEAD</span></div>
+        <div class="mood-tag" onclick="selectMood(this, '😤','heated')" data-mood="😤">😤 <span class="label">HEATED</span></div>
+        <div class="mood-tag" onclick="selectMood(this, '🤡','clowned')" data-mood="🤡">🤡 <span class="label">CLOWNED</span></div>
+        <div class="mood-tag" onclick="selectMood(this, '💀','cooked')" data-mood="💀">💀 <span class="label">COOKED</span></div>
+        <div class="mood-tag" onclick="selectMood(this, '🫠','melting')" data-mood="🫠">🫠 <span class="label">MELTING</span></div>
+        <div class="mood-tag" onclick="selectMood(this, '😶‍🌫️','zoned')" data-mood="😶‍🌫️">😶‍🌫️ <span class="label">ZONED</span></div>
+      </div>
+      <div class="submit-row">
+        <button class="btn-roast" id="roastBtn" onclick="submitReceipt()">🔥 GET ROASTED</button>
+        <button class="btn-tripping" onclick="amITripping()">🔍 AM I TRIPPING?</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEED VIEW -->
+  <div class="view" id="view-feed">
+    <div id="logCountDisplay" class="log-count"></div>
+    <div id="feedContainer">
+      <div class="empty-state">
+        <div class="empty-icon">🧾</div>
+        <div class="empty-title">NO RECEIPTS YET</div>
+        <div class="empty-sub">drop your first tea<br>and get your roast</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARCHETYPES VIEW -->
+  <div class="view" id="view-archetypes">
+    <div class="archetype-grid" id="archetypeGrid"></div>
+  </div>
+
+  <!-- PHASES VIEW -->
+  <div class="view" id="view-phases">
+    <div class="phase-section">
+      <div class="phase-header">ROADMAP</div>
+      <div class="phase-card active-phase">
+        <div class="phase-num">// PHASE 01 — ACTIVE</div>
+        <div class="phase-title">VIRAL TRACTION</div>
+        <div class="phase-desc">Free forever. Built to spread. Drop receipts, get roasted, share the chaos. Every post is a referral.</div>
+        <div class="phase-features">
+          <div class="phase-feat">Receipt Logging</div>
+          <div class="phase-feat">AI Roasts</div>
+          <div class="phase-feat">Pattern Detection</div>
+          <div class="phase-feat">Am I Tripping?</div>
+          <div class="phase-feat">Archetype Field Guide</div>
+        </div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-num">// PHASE 02 — COMING</div>
+        <div class="phase-title">PREMIUM ANALYSIS</div>
+        <div class="phase-desc">Savage mode AI. Deep behavioral reports. Relationship timelines. Pattern exports. Private vaults.</div>
+        <div class="phase-features">
+          <div class="phase-feat">Savage AI Mode</div>
+          <div class="phase-feat">Behavior Reports</div>
+          <div class="phase-feat">Emotional Timeline</div>
+          <div class="phase-feat">Pattern Export</div>
+          <div class="phase-feat">Private Vault</div>
+        </div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-num">// PHASE 03 — FUTURE</div>
+        <div class="phase-title">PHYSICAL EXPANSION</div>
+        <div class="phase-desc">Merch drops. Content series. Community. Your receipts become culture.</div>
+        <div class="phase-features">
+          <div class="phase-feat">Merch Drops</div>
+          <div class="phase-feat">Content Series</div>
+          <div class="phase-feat">Community</div>
+          <div class="phase-feat">IRL Events</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <button class="bnav-item active" onclick="switchView('drop')" id="bnav-drop">
+    <span class="bnav-icon">🧾</span>
+    <span class="bnav-label">Drop</span>
+  </button>
+  <button class="bnav-item" onclick="switchView('feed')" id="bnav-feed">
+    <span class="bnav-icon">📜</span>
+    <span class="bnav-label">Feed</span>
+  </button>
+  <button class="bnav-item" onclick="switchView('archetypes')" id="bnav-archetypes">
+    <span class="bnav-icon">🗂️</span>
+    <span class="bnav-label">Guide</span>
+  </button>
+  <button class="bnav-item" onclick="switchView('phases')" id="bnav-phases">
+    <span class="bnav-icon">🚀</span>
+    <span class="bnav-label">Roadmap</span>
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== STATE =====
+let selectedMood = null;
+let selectedMoodEmoji = null;
+let receipts = JSON.parse(localStorage.getItem('receipts') || '[]');
+let patternShown = false;
+
+// ===== ARCHETYPES DATA =====
+const ARCHETYPES = [
+{ level: "LEVEL 1 — THE EVERYDAY MINDFUCKS", items: [
+{ num: 1, name: "Gaslight Lite", quote: "Doesn't erase reality—just turns it down to 10%.", advice: "Squint, then trust your own eyes." },
+{ num: 2, name: "Selective Amnesia Unit", quote: "Forgets every promise, remembers that one 2022 comment in perfect 4K.", advice: "Externalize memory—notes, texts, receipts. Your timeline = your armor." },
+{ num: 3, name: "Revisionist Historian", quote: "Rewrites last week's fight so they're the saint and you're the villain.", advice: "Ask for concrete examples, document interactions, then... sip tea." },
+{ num: 4, name: "Deflection Ninja", quote: "Turns any complaint into your tone, timing, or vibe.", advice: "Pause. Restate the issue calmly. Ninja deflected nothing." },
+{ num: 5, name: "Whataboutism Warrior", quote: "Sure I did that... but what about that thing YOU did?", advice: "Stay on topic. You are not in a debate club—you're setting boundaries." },
+]},
+{ level: "LEVEL 2 — THE SLOW-BURN CONTROLLERS", items: [
+{ num: 6, name: "Isolation Architect", quote: "Slow-motion removal of your support system... all 'for us'.", advice: "Schedule weekly friend/family check-ins—your orbit matters." },
+{ num: 7, name: "Scorekeeper Supreme", quote: "Keeps a ledger of favors, slights, and... apparently, orgasms.", advice: "You don't play the points game. Score = self-respect." },
+{ num: 8, name: "Goalpost Mover", quote: "You hit their standard. They raise it. Again.", advice: "Recognize progress. Your growth doesn't need permission." },
+{ num: 9, name: "Jealousy Engineer", quote: "Creates drama about anyone who glances at you twice.", advice: "You can't control their paranoia—only your boundaries." },
+{ num: 10, name: "Slow Boil Saboteur", quote: "Tiny cuts over years so you don't notice you're emotionally bleeding out.", advice: "Document your wins and small victories. Track your emotional health like stats." },
+]},
+{ level: "LEVEL 3 — THE HEAVY HITTERS", items: [
+{ num: 11, name: "DARVO Dynamo", quote: "Deny → Attack → Reverse Victim & Offender. Olympic-level emotional gymnastics.", advice: "Step out of the spiral. Your calm = power." },
+{ num: 12, name: "Intermittent Reinforcement Junkie", quote: "Just enough affection to keep you hooked.", advice: "Don't chase crumbs. Build a full buffet of your own joy." },
+{ num: 13, name: "Walking Victim Card", quote: "Their trauma is always the trump card. Yours? Invalid.", advice: "Name your own feelings. You get points for honesty." },
+{ num: 14, name: "Love Bomber / Hoover Combo", quote: "Floods you with affection, then disappears. Reappears when you start healing.", advice: "Protect emotional bandwidth. Love should feel like a river, not a flood warning." },
+{ num: 15, name: "Projection Projector", quote: "Accuses you of exactly what they're doing.", advice: "Spot the projection. Respond to facts, not accusations." },
+{ num: 16, name: "Identity Parasite", quote: "Absorbs your hobbies, opinions, and friends until you're a supporting character in your own life.", advice: "Keep hobbies sacred. You are not optional in your own story." },
+{ num: 17, name: "Walking Red Flag Factory", quote: "Produces red flags faster than you can update your group chat.", advice: "Keep a list. Recognizing patterns = your superpower." },
+]},
+{ level: "LEVEL 4 — ADVANCED / ELITE TIER", items: [
+{ num: 18, name: "Weaponized Therapy Speaker", quote: "'I'm just setting a boundary' = ghosting you for 3 weeks.", advice: "Watch words vs. actions. Accountability > buzzwords." },
+{ num: 19, name: "Conditional Lover", quote: "Love = a performance review with shifting KPIs.", advice: "Healthy love is consistent. You don't need to meet a moving goalpost." },
+{ num: 20, name: "Trauma Olympics Champion", quote: "Your pain is never valid—they had it worse on Tuesday.", advice: "Feelings are not a contest. Your emotions matter." },
+{ num: 21, name: "Alternate Reality Architect", quote: "Lives in a parallel universe where they're always right. Demands you move there too.", advice: "Ground yourself in facts, not fiction. Reality = non-negotiable." },
+{ num: 22, name: "Smear Campaign Strategist", quote: "Quietly destroys your reputation when you try to leave.", advice: "Protect your narrative. Facts > gossip." },
+]},
+];
+
+const COUNTER_ARCHETYPES = [
+{ name: "Reality Anchor", desc: "Stays grounded in facts, documents timelines, trusts their own perception." },
+{ name: "Boundary Setter", desc: "Communicates limits clearly, enforces them consistently, no apology required." },
+{ name: "Witness Protector", desc: "Screenshots everything. Your receipts are your armor." },
+{ name: "Detachment Artist", desc: "Stops explaining themselves to people who misunderstand on purpose." },
+{ name: "Support System Builder", desc: "Rebuilds their orbit—friends, family, community. No isolation allowed." },
+];
+
+// ===== RENDER ARCHETYPES =====
+function renderArchetypes() {
+const grid = document.getElementById('archetypeGrid');
+grid.innerHTML = '';
+ARCHETYPES.forEach(level => {
+const lbl = document.createElement('div');
+lbl.className = 'archetype-level';
+lbl.textContent = level.level;
+grid.appendChild(lbl);
+level.items.forEach(a => {
+const item = document.createElement('div');
+item.className = 'archetype-item';
+item.innerHTML = `
+<div class="archetype-name"><span class="archetype-num">${a.num.toString().padStart(2,'0')}</span>${a.name}</div>
+<div class="archetype-quote">"${a.quote}"</div>
+<div class="archetype-advice-row">
+<span class="advice-arrow">→</span>
+<span class="archetype-advice-text">${a.advice}</span>
+</div>`;
+grid.appendChild(item);
+});
+});
+}
+
+// ===== MOOD SELECTION =====
+function selectMood(el, emoji, label) {
+document.querySelectorAll('.mood-tag').forEach(t => t.classList.remove('selected'));
+el.classList.add('selected');
+selectedMoodEmoji = emoji;
+selectedMood = label;
+}
+
+// ===== SWITCH VIEWS =====
+function switchView(name) {
+document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+document.getElementById('view-' + name).classList.add('active');
+document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+document.querySelectorAll('.nav-tab').forEach(t => {
+if (t.textContent.toLowerCase().includes(name === 'drop' ? 'drop' : name === 'feed' ? 'feed' : name === 'archetypes' ? 'field' : 'road')) {
+t.classList.add('active');
+}
+});
+document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+document.getElementById('bnav-' + name)?.classList.add('active');
+if (name === 'feed') renderFeed();
+if (name === 'archetypes') renderArchetypes();
+}
+
+// ===== SUBMIT RECEIPT =====
+async function submitReceipt() {
+const text = document.getElementById('dropInput').value.trim();
+if (!text) { showToast('spill something first'); return; }
+if (!selectedMood) { showToast('pick a mood tag'); return; }
+
+const btn = document.getElementById('roastBtn');
+btn.disabled = true;
+btn.textContent = '🔥 ROASTING...';
+
+const receipt = {
+id: Date.now(),
+text,
+mood: selectedMoodEmoji,
+moodLabel: selectedMood,
+timestamp: new Date().toISOString(),
+roast: null,
+reality: null,
+loading: true,
+};
+receipts.unshift(receipt);
+saveReceipts();
+document.getElementById('dropInput').value = '';
+document.querySelectorAll('.mood-tag').forEach(t => t.classList.remove('selected'));
+selectedMood = null; selectedMoodEmoji = null;
+
+try {
+const roastText = await callAI('roast', text);
+receipt.roast = roastText;
+} catch(e) {
+receipt.roast = "AI is currently in its feelings. Diagnosis: Definitely them, not you. 💀";
+}
+receipt.loading = false;
+saveReceipts();
+
+btn.disabled = false;
+btn.textContent = '🔥 GET ROASTED';
+updateBadge();
+checkPattern();
+showToast('receipt logged 🧾');
+switchView('feed');
+}
+
+// ===== AM I TRIPPING =====
+async function amITripping() {
+const text = document.getElementById('dropInput').value.trim();
+if (!text) { showToast('describe the situation first'); return; }
+const btn = document.querySelector('.btn-tripping');
+btn.textContent = '🔍 CHECKING...';
+btn.disabled = true;
+try {
+const reality = await callAI('reality', text);
+// Show inline
+let box = document.getElementById('realityPreview');
+if (!box) {
+box = document.createElement('div');
+box.id = 'realityPreview';
+box.className = 'reality-section';
+box.style.cssText = 'margin-top:14px;border-radius:10px;border:1px dashed #333;';
+document.querySelector('.drop-section').appendChild(box);
+}
+box.innerHTML = `
+<div class="reality-header">🔍 AM I TRIPPING?</div>
+<div class="reality-text">${reality}</div>`;
+} catch(e) {
+showToast('reality check failed (ironic)');
+}
+btn.textContent = '🔍 AM I TRIPPING?';
+btn.disabled = false;
+}
+
+// ===== CALL AI =====
+async function callAI(type, situation) {
+let systemPrompt, userPrompt;
+
+if (type === 'roast') {
+systemPrompt = `You are the RECEIPTS app's roast engine. You give sharp, satirical, darkly funny commentary on interpersonal situations. You diagnose behavioral patterns with clever names (like "Controller Paralysis", "Selective Amnesia Protocol", "Gaslight Lite Mode", "DARVO Dynamo", etc). Keep it under 80 words. Be comedic but validating. End with a one-line diagnosis in brackets like [Diagnosis: ___]. Never be cruel to the person sharing—always punch at the other party's behavior.`;
+userPrompt = `Roast this situation: "${situation}"`;
+} else {
+systemPrompt = `You are the RECEIPTS app's "Am I Tripping?" reality checker. Give a humorous but grounded reality check on whether the person's expectations are reasonable. Validate or gently correct in 60 words max. End with a verdict like "VERDICT: You are NOT tripping." or "VERDICT: Minor trip, but valid." Be funny and warm.`;
+userPrompt = `Reality check this situation: "${situation}"`;
+}
+
+const response = await fetch("https://api.anthropic.com/v1/messages", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({
+model: "claude-sonnet-4-20250514",
+max_tokens: 1000,
+system: systemPrompt,
+messages: [{ role: "user", content: userPrompt }]
+})
+});
+
+if (!response.ok) throw new Error('API error');
+const data = await response.json();
+return data.content.map(b => b.text || '').join('');
+}
+
+// ===== PATTERN DETECTION =====
+async function checkPattern() {
+if (receipts.length < 10 || patternShown) return;
+patternShown = true;
+
+const container = document.getElementById('patternAlertContainer');
+const recentTexts = receipts.slice(0, 10).map(r => r.text).join(' | ');
+
+// Randomly pick an archetype to demonstrate pattern detection
+const allItems = ARCHETYPES.flatMap(l => l.items);
+const detected = allItems[Math.floor(Math.random() * allItems.length)];
+const counter = COUNTER_ARCHETYPES[Math.floor(Math.random() * COUNTER_ARCHETYPES.length)];
+
+container.innerHTML = `
+<div class="pattern-alert">
+<div class="pattern-badge">⚠️ PATTERN DETECTED</div>
+<div class="pattern-archetype">${detected.name}</div>
+<div class="pattern-quote">"${detected.quote}"</div>
+<div class="pattern-advice-label">// YOUR MOVE</div>
+<div class="pattern-advice">${detected.advice}</div>
+<div class="counter-archetype">
+<div class="counter-label">// COUNTER-ARCHETYPE</div>
+<div class="counter-name">→ ${counter.name}</div>
+<div class="counter-desc">${counter.desc}</div>
+</div>
+</div>`;
+}
+
+// ===== RENDER FEED =====
+function renderFeed() {
+const container = document.getElementById('feedContainer');
+const logDisplay = document.getElementById('logCountDisplay');
+
+updateBadge();
+if (receipts.length === 0) {
+logDisplay.textContent = '';
+container.innerHTML = `<div class="empty-state">
+<div class="empty-icon">🧾</div>
+<div class="empty-title">NO RECEIPTS YET</div>
+<div class="empty-sub">drop your first tea<br>and get your roast</div>
+</div>`;
+return;
+}
+
+const needed = 10 - receipts.length;
+logDisplay.innerHTML = receipts.length >= 10
+? `<em>${receipts.length}</em> RECEIPTS · PATTERN DETECTION ACTIVE`
+: `<em>${receipts.length}</em> RECEIPTS · <em>${needed}</em> MORE UNTIL PATTERN DETECTION`;
+
+container.innerHTML = '';
+receipts.forEach(r => {
+const card = document.createElement('div');
+card.className = 'receipt-card';
+const t = new Date(r.timestamp);
+const timeStr = t.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + t.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+let roastHtml = '';
+if (r.loading) {
+roastHtml = `<div class="loading-roast"><div class="dot-loader"><span></span><span></span><span></span></div> AI is cooking your roast...</div>`;
+} else if (r.roast) {
+const diagMatch = r.roast.match(/\[Diagnosis:\s*([^\]]+)\]/);
+const diagText = diagMatch ? diagMatch[1] : null;
+const roastClean = r.roast.replace(/\[Diagnosis:[^\]]+\]/, '').trim();
+roastHtml = `<div class="roast-section">
+<div class="roast-header">🔥 THE ROAST</div>
+<div class="roast-text">${roastClean}</div>
+${diagText ? `<div class="roast-diagnosis">Diagnosis: ${diagText}</div>` : ''}
+</div>`;
+}
+
+card.innerHTML = `
+<div class="receipt-top">
+<div class="receipt-meta">
+<div class="receipt-mood">
+<div class="mood-pill">${r.mood} <span class="mlabel">${r.moodLabel.toUpperCase()}</span></div>
+</div>
+<div class="receipt-time">${timeStr}</div>
+</div>
+<div class="receipt-text">${escapeHtml(r.text)}</div>
+</div>
+${roastHtml}`;
+container.appendChild(card);
+});
+}
+
+// ===== UTILS =====
+function saveReceipts() {
+localStorage.setItem('receipts', JSON.stringify(receipts));
+updateBadge();
+}
+function updateBadge() {
+document.getElementById('logCountBadge').textContent = receipts.length;
+}
+function showToast(msg) {
+const t = document.getElementById('toast');
+t.textContent = msg;
+t.classList.add('show');
+setTimeout(() => t.classList.remove('show'), 2500);
+}
+function escapeHtml(str) {
+return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===== INIT =====
+updateBadge();
+if (receipts.length >= 10) patternShown = true;
+</script>
+</body></html>

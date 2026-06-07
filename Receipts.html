@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>RECEIPTS 🧾</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,500;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0a;
+    --paper: #f5f0e8;
+    --hot: #ff2d6b;
+    --acid: #c8ff00;
+    --muted: #2a2a2a;
+    --ghost: #1a1a1a;
+    --border: #333;
+    --tag-bg: #1e1e1e;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.5;
+  }
+
+  /* Header */
+  .header {
+    padding: 20px 20px 0;
+    position: sticky;
+    top: 0;
+    background: var(--ink);
+    z-index: 100;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.4rem;
+    letter-spacing: 2px;
+    color: var(--paper);
+    line-height: 1;
+  }
+  .logo span { color: var(--hot); }
+  .logo-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: #555;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .streak-badge {
+    background: var(--ghost);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--acid);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Nav tabs */
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    margin-top: 14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: #666;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+  }
+  .nav-tab.active {
+    background: var(--hot);
+    color: var(--paper);
+    border-color: var(--hot);
+  }
+
+  /* Main content */
+  .main { padding: 16px 20px 100px; }
+
+  /* Drop a Receipt form */
+  .drop-section {
+    background: var(--ghost);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .drop-section::before {
+    content: 'DROP A RECEIPT';
+    position: absolute;
+    top: -2px;
+    right: 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    color: var(--hot);
+    background: var(--ghost);
+    padding: 0 6px;
+  }
+  .drop-prompt {
+    font-size: 0.8rem;
+    color: #666;
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 12px;
+    font-style: italic;
+  }
+  .drop-textarea {
+    width: 100%;
+    background: var(--ink);
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 14px;
+    color: var(--paper);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    resize: none;
+    min-height: 90px;
+    line-height: 1.5;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .drop-textarea:focus { border-color: var(--hot); }
+  .drop-textarea::placeholder { color: #3a3a3a; }
+
+  /* Mood tags */
+  .mood-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: #555;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 12px 0 8px;
+  }
+  .mood-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .mood-tag {
+    background: var(--tag-bg);
+    border: 1.5px solid #333;
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .mood-tag span.label {
+    font-size: 0.65rem;
+    color: #666;
+    font-family: 'Space Mono', monospace;
+  }
+  .mood-tag.selected {
+    border-color: var(--hot);
+    background: rgba(255, 45, 107, 0.12);
+    color: var(--paper);
+  }
+  .mood-tag.selected span.label { color: var(--hot); }
+
+  /* Submit row */
+  .submit-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .btn-roast {
+    flex: 1;
+    background: var(--hot);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-roast:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-roast:active { transform: translateY(0); }
+  .btn-roast:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-tripping {
+    background: transparent;
+    border: 1.5px solid var(--acid);
+    color: var(--acid);
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-tripping:hover { background: rgba(200,255,0,0.08); }
+
+  /* Receipt card */
+  .receipt-card {
+    background: var(--ghost);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .receipt-top {
+    padding: 14px 16px;
+  }
+  .receipt-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .receipt-mood {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mood-pill {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .mood-pill .mlabel {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: #666;
+  }
+  .receipt-time {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: #444;
+  }
+  .receipt-text {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #ccc;
+  }
+  /* Roast response */
+  .roast-section {
+    border-top: 1px dashed #2a2a2a;
+    padding: 14px 16px;
+    background: rgba(255,45,107,0.04);
+  }
+  .roast-header {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--hot);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .roast-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,45,107,0.2);
+  }
+  .roast-text {
+    font-size: 0.88rem;
+    line-height: 1.65;
+    color: #e0d8cc;
+    font-style: italic;
+  }
+  .roast-diagnosis {
+    display: inline-block;
+    background: rgba(255,45,107,0.15);
+    border: 1px solid rgba(255,45,107,0.3);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--hot);
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+  }
+  /* Reality check */
+  .reality-section {
+    border-top: 1px dashed #2a2a2a;
+    padding: 12px 16px;
+    background: rgba(200,255,0,0.03);
+  }
+  .reality-header {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--acid);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .reality-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(200,255,0,0.15);
+  }
+  .reality-text {
+    font-size: 0.8rem;
+    line-height: 1.55;
+    color: #aaa;
+  }
+  .reality-verdict {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    background: rgba(200,255,0,0.1);
+    border: 1px solid rgba(200,255,0,0.25);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--acid);
+  }
+
+  /* Loading shimmer */
+  .loading-roast {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 16px;
+    border-top: 1px dashed #2a2a2a;
+    color: #555;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+  }
+  .dot-loader {
+    display: flex;
+    gap: 4px;
+  }
+  .dot-loader span {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--hot);
+    animation: blink 1.2s infinite;
+  }
+  .dot-loader span:nth-child(2) { animation-delay: 0.2s; }
+  .dot-loader span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink {
+    0%, 80%, 100% { opacity: 0.2; }
+    40% { opacity: 1; }
+  }
+
+  /* Pattern alert */
+  .pattern-alert {
+    background: linear-gradient(135deg, #1a0a1a, #0a0a1a);
+    border: 1px solid rgba(255,45,107,0.4);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    animation: slideIn 0.4s ease;
+  }
+  .pattern-alert::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top right, rgba(255,45,107,0.08), transparent 60%);
+  }
+  .pattern-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--hot);
+    color: white;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  .pattern-archetype {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 1px;
+    color: var(--paper);
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+  .pattern-quote {
+    font-size: 0.82rem;
+    color: #888;
+    font-style: italic;
+    line-height: 1.55;
+    margin-bottom: 12px;
+  }
+  .pattern-advice-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--acid);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .pattern-advice {
+    font-size: 0.85rem;
+    line-height: 1.55;
+    color: #ddd;
+  }
+  .counter-archetype {
+    margin-top: 14px;
+    padding: 12px;
+    background: rgba(200,255,0,0.06);
+    border: 1px solid rgba(200,255,0,0.2);
+    border-radius: 10px;
+  }
+  .counter-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--acid);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .counter-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    color: var(--acid);
+    margin-bottom: 4px;
+  }
+  .counter-desc {
+    font-size: 0.78rem;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  /* Phase roadmap section */
+  .phase-section { margin-bottom: 20px; }
+  .phase-header {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+    color: var(--paper);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .phase-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .phase-card {
+    background: var(--ghost);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .phase-card.active-phase { border-color: var(--hot); }
+  .phase-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--hot);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .phase-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+  .phase-desc {
+    font-size: 0.8rem;
+    color: #777;
+    line-height: 1.55;
+  }
+  .phase-features {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .phase-feat {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 0.65rem;
+    color: #888;
+    font-family: 'Space Mono', monospace;
+  }
+  .phase-card.active-phase .phase-feat {
+    border-color: rgba(255,45,107,0.3);
+    color: #bbb;
+  }
+
+  /* Archetypes gallery */
+  .archetype-grid { }
+  .archetype-level {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: #555;
+    text-transform: uppercase;
+    margin: 16px 0 8px;
+  }
+  .archetype-item {
+    background: var(--ghost);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 8px;
+  }
+  .archetype-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    color: var(--paper);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .archetype-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--hot);
+    border: 1px solid rgba(255,45,107,0.3);
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+  .archetype-quote {
+    font-size: 0.78rem;
+    color: #777;
+    font-style: italic;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .archetype-advice-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .advice-arrow {
+    color: var(--acid);
+    font-size: 0.8rem;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+  .archetype-advice-text {
+    font-size: 0.78rem;
+    color: #aaa;
+    line-height: 1.5;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #333;
+  }
+  .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .empty-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    color: #3a3a3a;
+    margin-bottom: 6px;
+  }
+  .empty-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: #2a2a2a;
+    line-height: 1.6;
+  }
+
+  /* Log count */
+  .log-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: #444;
+    text-align: center;
+    margin-bottom: 14px;
+    letter-spacing: 1px;
+  }
+  .log-count em {
+    color: var(--hot);
+    font-style: normal;
+  }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(10,10,10,0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 200;
+  }
+  .bnav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 4px 14px;
+    cursor: pointer;
+    gap: 4px;
+    transition: all 0.15s;
+    border: none;
+    background: transparent;
+    color: #444;
+  }
+  .bnav-item.active { color: var(--hot); }
+  .bnav-icon { font-size: 1.2rem; }
+  .bnav-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--ink); }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: var(--hot);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.3s;
+    white-space: nowrap;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Sections */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .api-error {
+    background: rgba(255,45,107,0.08);
+    border: 1px solid rgba(255,45,107,0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: #888;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="logo">RECEIPT<span>S</span> 🧾</div>
+      <div class="logo-sub">EVIDENCE-BASED EMOTIONAL CLARITY</div>
+    </div>
+    <div class="streak-badge" id="streakBadge">🔥 <span id="logCountBadge">0</span> logs</div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('drop')">🧾 Drop</button>
+    <button class="nav-tab" onclick="switchView('feed')">📜 Feed</button>
+    <button class="nav-tab" onclick="switchView('archetypes')">🗂️ Field Guide</button>
+    <button class="nav-tab" onclick="switchView('phases')">🚀 Roadmap</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- DROP VIEW -->
+  <div class="view active" id="view-drop">
+    <div id="patternAlertContainer"></div>
+    <div class="drop-section">
+      <div class="drop-prompt">// spill it. no judgment. just facts.</div>
+      <textarea class="drop-textarea" id="dropInput" placeholder="he said he 'forgot' we had plans but liked her instagram 40 minutes later..."></textarea>
+      <div class="mood-label">// MANDATORY MOOD TAG</div>
+      <div class="mood-tags">
+        <div class="mood-tag" onclick="selectMood(this, '😒','dead')" data-mood="😒">😒 <span class="label">DEAD</span></div>
+        <div class="mood-tag" onclick="selectMood(this, '😤','heated')" data-mood="😤">😤 <span class="label">HEATED</span></div>
+        <div class="mood-tag" onclick="selectMood(this, '🤡','clowned')" data-mood="🤡">🤡 <span class="label">CLOWNED</span></div>
+        <div class="mood-tag" onclick="selectMood(this, '💀','cooked')" data-mood="💀">💀 <span class="label">COOKED</span></div>
+        <div class="mood-tag" onclick="selectMood(this, '🫠','melting')" data-mood="🫠">🫠 <span class="label">MELTING</span></div>
+        <div class="mood-tag" onclick="selectMood(this, '😶‍🌫️','zoned')" data-mood="😶‍🌫️">😶‍🌫️ <span class="label">ZONED</span></div>
+      </div>
+      <div class="submit-row">
+        <button class="btn-roast" id="roastBtn" onclick="submitReceipt()">🔥 GET ROASTED</button>
+        <button class="btn-tripping" onclick="amITripping()">🔍 AM I TRIPPING?</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEED VIEW -->
+  <div class="view" id="view-feed">
+    <div id="logCountDisplay" class="log-count"></div>
+    <div id="feedContainer">
+      <div class="empty-state">
+        <div class="empty-icon">🧾</div>
+        <div class="empty-title">NO RECEIPTS YET</div>
+        <div class="empty-sub">drop your first tea<br>and get your roast</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARCHETYPES VIEW -->
+  <div class="view" id="view-archetypes">
+    <div class="archetype-grid" id="archetypeGrid"></div>
+  </div>
+
+  <!-- PHASES VIEW -->
+  <div class="view" id="view-phases">
+    <div class="phase-section">
+      <div class="phase-header">ROADMAP</div>
+      <div class="phase-card active-phase">
+        <div class="phase-num">// PHASE 01 — ACTIVE</div>
+        <div class="phase-title">VIRAL TRACTION</div>
+        <div class="phase-desc">Free forever. Built to spread. Drop receipts, get roasted, share the chaos. Every post is a referral.</div>
+        <div class="phase-features">
+          <div class="phase-feat">Receipt Logging</div>
+          <div class="phase-feat">AI Roasts</div>
+    
